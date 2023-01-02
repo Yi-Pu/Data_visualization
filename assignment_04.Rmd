@@ -1,0 +1,275 @@
+---
+title: "36-613 Homework 4, Fall 2022"
+author: 
+- "Yi Pu"
+- 'Style Guide: The tidyverse styleguide'
+date: "Due Wednesday, Sept 28th, 2022 (11:59 PM EDT) on Gradescope"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(tidyverse)
+```
+
+## Problem 1: Final Project Prep (40pts)
+
+The goal of this problem is to help your team get started on your final project for this class. You can view your team's assigned project dataset [here](https://docs.google.com/spreadsheets/d/1XRCC8WO8O1-fy9nDf1pQ_15XxYYNGU6Z/edit?usp=sharing&ouid=110931742237993657587&rtpof=true&sd=true).
+
+a. (10pts) To help structure your report, you are required to come up with at least three interesting, overarching questions for your dataset that are relevant for your 36-611 RFI. For this part, all you have to do is come up with three potential research questions of interest and list them here:
+
+**How does music feature of different genres differ?**
+
+**The relationship of different genres?**
+
+**How does popular genre change over time?**
+
+b. (20pts) For this part, describe a plot you can make for each of the three research questions and a write a few sentences justifying why you think your plot choice is appropriate for the research question. To make you think more creatively about these potential plots, __you must describe making a different type of plot for each research question__ (e.g., you can NOT say that you'll make a histogram for all three questions!) .
+
+**Group the data by genre, and display the histograms of each group's musical features. Also we can use the violin plot/ridge plot. These plots are good because we can know how the musical features of different genres are distributed.**
+
+**Group the data by genre, then use PCA to reduce the dimension of musical features. So we've got principal components of different genres. And then we use the correlation plot to show the relationship between the first principal component of different genres. I choose this plot because we can see straightforwardly from one plot how similar different genres are.**
+
+**A curve that shows how number of songs/albums/singers of different genres change over time. I choose this plot because we can easily observe what's the most popular genre at each time point, and we can know how the popularity of each genre change.**
+
+c. (10pts) Create one of your plots described in part b! For this part, all you need to do is turn in your graph - you do NOT need to write an interpretation of the plot. __Make sure it is labeled appropriatedly.__ 
+
+```{r}
+# Get the Data
+spotify_songs <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-01-21/spotify_songs.csv')
+
+# PLotting
+spotify_songs %>% 
+  ggplot(aes(x = playlist_genre, 
+             y = energy,
+             fill = playlist_genre)) + 
+  geom_violin(alpha = .5) + 
+  geom_boxplot(width = .2, alpha = .5) +
+  labs(x = "Genre",
+       y = "Energe",
+       title = "Distribution of Energe of different Genres") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  coord_flip()
+```
+
+## Problem 2: Olympic Regression (25pts)
+
+For this problem you'll work with a dataset curated via the [#TidyTuesday project](https://github.com/rfordatascience/tidytuesday/blob/master/data/2021/2021-07-27/readme.md) containing information about Olympic athletes. The following code reads in the dataset and filters it to just include USA athletes, selecting a subset of the columns, and tidies up medal columns you will use in this problem:
+
+```{r}
+library(tidyverse)
+usa_olympics <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-27/olympics.csv") %>%
+  filter(team == "United States") %>%
+  dplyr::select(-team, -noc) %>%
+  mutate(
+    won_medal = as.numeric(!is.na(medal)),
+    medal = ifelse(is.na(medal), "None", medal)
+  )
+```
+
+The dataset contains information on the performance of USA Olympic athletes. Each row corresponds to a unique athlete-event combination for a particular year (there are 17,847 in total). This means that athletes are repeated throughout the dataset but we will ignore that detail for this problem. We have information about the athlete such as their height, weight, age, and sex. We also have info about the Olympics event they competed in, including the year, season, and the event outcome for the athlete in terms of their medal placement (if any). You will focus on the following variables for this problem:
+
++ `year`: The year that the Olympics occurred.
++ `season`: Type of Olympics, Summer or Winter.
++ `height`: Athlete height in cm.
++ `sex`: Athlete's reported sex.
+
+a. (10pts) For this part, using the `usa_olympics` dataset, make a graph that does the following:
+
++ Displays `year` on the x-axis and `height` on the y-axis. (Make sure your plot avoids over-plotting...)
+
++ Displays the *linear trend* between `year` and `height`. Display a 99% confidence interval when doing this.
+
++ Be sure that your graph has appropriate labels.
+
+```{r}
+usa_olympics %>%
+  ggplot(aes(x = year, y = height)) +
+  geom_point(
+    alpha = .2,
+    col = "blue"
+  ) +
+  geom_smooth(
+    method = "lm",
+    col = "red",
+    level = 0.99
+  ) +
+  labs(title = "Relationship Between Height and Year") +
+  theme(plot.title = element_text(hjust = .5))
+```
+
+Then answer the following the questions:
+
++ Describe the relationship you observe between the `height` and `year` based on the displayed regression line.
+
+**The expected value of height only decreases extremely slightly when year increases. So the expected value of height almost doesn't change over time and maintain a level about 175. But the variance of height increases when year increases.**
+
++ Do any of the assumptions we make for linear regression appear to be violated based on your plot? (You do NOT need to turn in a residual versus fit plot to answer this question.)
+
+**The variance of height increases when year increases, so there's heteroskedasticity. We may need to transform the variables. And also we can observe some outliers in this plot.**
+
+b. (5pts) For this part, make a graph that does the following:
+
++ Displays `year` on the x-axis, `height` on the y-axis, and color by `sex`. (Again, avoid over-plotting...)
+
++ Displays the *linear trend* between `year` and `height` with separate lines by `sex` mapped via color. Display a 99% confidence interval when doing this.
+
++ Be sure that your graph has appropriate labels.
+
+For this part, you only have to turn in the graph.
+
+```{r}
+usa_olympics %>%
+  ggplot(aes(
+    x = year,
+    y = height,
+    col = sex
+  )) +
+  geom_point(alpha = .2) +
+  geom_smooth(
+    method = "lm",
+    level = 0.99
+  ) +
+  labs(title = "Relationship Between Height, Year and Sex") +
+  theme(plot.title = element_text(hjust = .5))
+```
+
+c. (5pts) Do you observe a similar or different relationship between `height` and `year` for your lines in part (b) compared to part (a)? State if they are similar or different, and explain in 1-2 sentences. 
+
+**In this plot, both Male and Female's height increase over time, which seems to disagree with the pattern observed in (a). This can be explained by Simpson's paradox. The proportion of female athletes, who are shorter than male athletes on average, increases over time, making the overall average height of athletes decrease.**
+
+d. (5pts): Are the intercepts meaningful in this context? Would you feel comfortable using this regression model to predict USA Olympic athlete height in the year 3005? Explain in a few sentences.
+
+**The intercept means the expected height of athletes in year 1890. But this is not really meaningful since the first Olympics Game was in 1986. This regression model can't be used to predict USA Olympic athlete height in the year 3005. Because when year increases, the relationship between height and year will no longer be linear. Height will not increase or decrease unlimitedly, since human height has limitation.**
+
+
+## Problem 3: Contour Plots and Heat Maps (35 points)
+
+In this problem, we will use a dataset on students' academic performance, found here:
+```{r}
+student_data <- read_csv("https://raw.githubusercontent.com/ryurko/DataViz-36613-Fall22/main/data/students.csv")
+```
+
+Details about the dataset are found [here](https://www.kaggle.com/aljarah/xAPI-Edu-Data). However, the main things you need to know about this dataset are:
+
++ Students' `Grade` is classified as Low (L), Medium (M), or High (H).
++ Covariates: There are 15 variables on student characteristics and behaviors, 4 of which are quantitative.
+
+a. (10pts) For this part, do the following:
+
++ Create a scatterplot of `RaisedHands` and `VisitedResources` (make sure to set `alpha` < 1) with contour lines added using `geom_density2d()`.
+
+```{r}
+student_data %>%
+  ggplot(aes(
+    x = RaisedHands,
+    y = VisitedResources
+  )) +
+  geom_point(alpha = .3) +
+  geom_density2d() +
+  labs(title = "Relationship Between RaisedsHands and VisitedResources") +
+  theme(plot.title = element_text(hjust = .5))
+```
+
++ In class we discussed how contour lines use two bandwidths; `geom_density2d()` estimates these bandwidths by default. Now, copy-and-paste your above code, but make the bandwidth smaller by setting `h = c(10, 10)` within `geom_density2d()`.
+
+```{r}
+student_data %>%
+  ggplot(aes(
+    x = RaisedHands,
+    y = VisitedResources
+  )) +
+  geom_point(alpha = .3) +
+  geom_density2d(h = c(10, 10)) +
+  labs(title = "Relationship Between RaisedsHands and VisitedResources") +
+  theme(plot.title = element_text(hjust = .5))
+```
+
++ Compare and contrast the two plots in 1-3 sentences.
+
+**The second plot has more contour lines than the first plot since its bandwidth is smaller. And there are more center appearing in the second plot. So the second plot would assign the points into more groups.**
+
+b. (15pts) Similar to Part A, again make a scatterplot of `RaisedHands` and `VisitedResources` with contour lines, but with the following changes:
+
++ Make the bandwidth of the contour lines larger by setting `h = c(80, 80)` within `geom_density2d()`
++ Set the color of the points according to `Grade` and the shape of the points according to `Gender`.
+
+```{r}
+student_data %>%
+  ggplot(aes(
+    x = RaisedHands,
+    y = VisitedResources
+  )) +
+  geom_point(aes(
+    col = Grade,
+    shape = Gender
+  ),
+  alpha = .6
+  ) +
+  geom_density2d(h = c(80, 80)) +
+  labs(title = "Relationship Between RaisedsHands,VisitedResources, Grade and Gender") +
+  theme(plot.title = element_text(hjust = .5))
+```
+
+After you've made your plot, answer the following two questions:
+
++ How many modes are there in the scatterplot? In your answer, also characterize/describe each mode in terms of `RaisedHands` and `VisitedResources`.
+
+**There are two modes in the scatterplot. The first is at bottom left of the plot, these points are with low  RaisedHands and low VisitedResources. The second is at top right of the plot, these points are with high  RaisedHands and high VisitedResources.**
+
++ In 1-3 sentences, characterize/describe each mode in terms of `Grade` and `Gender`.
+
+**Most of the points that belong to the first mode are with low or medium Grade. And most of the points that belong to the second mode are with high or medium Grade.**
+
+c. (10pts) For this part, you'll have to make two different heat maps (and all you'll need to do is turn in the two graphs). Please do the following:
+
++ Make a heat map of `RaisedHands` and `VisitedResources` with points added but no contour lines (using the default bandwidth) with `stat_density2d`. Furthermore, change the default colors using `scale_fill_gradient()` and setting the `low` and `high` arguments in that function. Be sure that you use `geom_point()` *after* you use `stat_density2d` (otherwise, you won't be able to see the points).
+
+```{r}
+student_data %>%
+  ggplot(aes(
+    x = RaisedHands,
+    y = VisitedResources
+  )) +
+  stat_density2d(aes(fill = after_stat(density)),
+    geom = "tile",
+    contour = FALSE
+  ) +
+  scale_fill_gradient(low = "white", high = "darkorange") +
+  geom_point(aes(
+    col = Grade,
+    shape = Gender
+  ),
+  alpha = .6
+  ) +
+  labs(title = "Relationship Between RaisedsHands, VisitedResources, Grade and Gender") +
+  theme(plot.title = element_text(hjust = .5))
+```
+
++ Make a hexagonal heatmap of `RaisedHands` and `VisitedResources`, but this time use `scale_fill_gradient2()`. Within `scale_fill_gradient2()`, specify a "medium count" color using the `mid` argument (similar to the `low` and `high` arguments). Within `scale_fill_gradient2()`, there is an argument called `midpoint` that specifies what a "medium density" is. The default is 0, which doesn't make sense for densities, because 0 is the lowest possible value for densities. So, experiment and set `midpoint` equal to a non-zero number that you think makes sense given the range of counts observed in your hexagonal bins. 
+
+```{r}
+student_data %>%
+  ggplot(aes(
+    x = RaisedHands,
+    y = VisitedResources
+  )) +
+  geom_hex() +
+  scale_fill_gradient2(
+    low = "darkgrey",
+    mid = "darkred",
+    high = "darkblue",
+    midpoint = 4.5
+  ) +
+  labs(title = "Relationship Between RaisedsHands, VisitedResources, Grade and Gender") +
+  theme(plot.title = element_text(hjust = .5))
+```
+
+**Hint**: For the `midpoint` argument, your graph should be a gradient of three different colors that you've specified. If this isn't the case, you may have specified `midpoint` poorly.
+
+You should end up with a hexagonal heat map that has a mix of three colors throughout it. __Honestly, you should be careful when making visualizations based on three colors in the display.__ For the purpose of a density heat map, you should only focus on low to high changes in color. But now you know how to modify the color gradient to include a middle point cutoff for future reference.
+
+```{r}
+# styler:::style_active_file()
+```

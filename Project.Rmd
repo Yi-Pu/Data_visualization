@@ -1,0 +1,170 @@
+---
+title: "Project"
+author: "Yi Pu"
+date: "2022-10-11"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(corrplot)
+library(lubridate)
+# Get the Data
+spotify_songs <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-01-21/spotify_songs.csv')
+
+spotify_songs$year <- year(as.Date(spotify_songs$track_album_release_date))
+names(spotify_songs)
+summary(spotify_songs)
+
+```
+
+## Question 2
+
+```{r}
+corrplot.mixed(cor(dplyr::select(spotify_songs, danceability:duration_ms)),
+               lower = "number",
+               upper = "circle",
+               tl.pos = "lt",
+               number.cex = 1)
+
+# feature_pca <- spotify_songs %>% 
+#   dplyr::select(danceability:duration_ms) %>% 
+#   prcomp(center = TRUE, scale. = TRUE)
+feature_pca1 <- spotify_songs %>% 
+  dplyr::select(loudness, acousticness, energy) %>% 
+  prcomp(center = TRUE, scale. = TRUE)
+feature_pca2 <- spotify_songs %>% 
+  dplyr::select(danceability, valence, tempo) %>% 
+  prcomp(center = TRUE, scale. = TRUE)
+feature_pca2$rotation
+summary(feature_pca1)
+summary(feature_pca2)
+
+fviz_eig(feature_pca1, addlabels = TRUE) + 
+  geom_hline(yintercept = 100 * (1 / ncol(feature_pca1$x)), 
+             linetype = "dashed", 
+             color = "darkred")
+
+fviz_eig(feature_pca2, addlabels = TRUE) + 
+  geom_hline(yintercept = 100 * (1 / ncol(feature_pca1$x)), 
+             linetype = "dashed", 
+             color = "darkred")
+
+spotify_pc_matrix1 <- feature_pca1$x
+spotify_pc_matrix2 <- feature_pca2$x
+
+spotify_songs <- spotify_songs %>% 
+  mutate(pc1 = spotify_pc_matrix1[,1], 
+         pc2 = spotify_pc_matrix2[,2]) 
+```
+
+```{r}
+# PC1 ~ PC2
+# edm & r&b
+spotify_songs %>% 
+    filter((playlist_genre == "edm")|(playlist_genre == "r&b")) %>%
+  ggplot(aes(x = pc1, y = pc2,
+               col = playlist_genre)) + 
+  geom_point(alpha = 0.3) + 
+  labs(x = "upbeatness", y = "enthusiasm", 
+       color = "genre",
+       title = "Relationship between upbeatness, enthusiasm, and genres") +
+  theme(plot.title = element_text(hjust = .5))
+```
+
+
+```{r}
+# Latin
+spotify_songs %>% 
+    filter(playlist_genre == "latin") %>%
+    ggplot(aes(x = pc1, y = pc2,
+               col = playlist_subgenre)) + 
+    geom_point(alpha = 0.3) + 
+    labs(x = "upbeatness", y = "enthusiasm", 
+         color = "subgenre",
+         title = "Relationship between upbeatness, enthusiasm, and subgenres for pop songs") +
+  theme(plot.title = element_text(hjust = .5))
+```
+
+```{r}
+# PC1 ~genere
+spotify_songs %>% 
+  ggplot(aes(x = playlist_genre, 
+             y = pc1,
+             col = playlist_genre)) + 
+  geom_boxplot() + 
+  labs(x = "playlist_genre", y = "upbeatness",
+       title = "Distribution of upbeatness across genres",
+       color  = "genre") +
+  scale_y_continuous(limits = c(-2, 1.5)) +
+  theme(plot.title = element_text(hjust = .5))
+```
+
+```{r}
+# PC2 ~genere
+spotify_songs %>% 
+  ggplot(aes(x = playlist_genre, 
+             y = pc2,
+             col = playlist_genre)) + 
+  geom_boxplot() + 
+  labs(x = "playlist_genre", y = "enthusiasm",
+       title = "Distribution of enthusiasm across genres",
+       color = "genre") +
+  scale_y_continuous(limits = c(-1, 1)) +
+  theme(plot.title = element_text(hjust = .5))
+```
+
+```{r}
+spotify_songs %>% 
+  group_by(year) %>% 
+  mutate(year_count = n())
+
+spotify_songs %>% 
+  filter(playlist_genre == "pop") %>% 
+  ggplot(aes(x = year, 
+             y = track_popularity,
+             col = playlist_genre)) + 
+  geom_point() + 
+  geom_smooth() +
+  labs(x = "year", y = "popularity")
+
+# Popularity~year
+spotify_songs %>% 
+  ggplot(aes(x = year, 
+             y = track_popularity,
+             col = playlist_genre)) + 
+  geom_point(alpha = .1) + 
+  geom_smooth(se = F) +
+  labs(x = "year", y = "popularity")
+```
+
+```{r}
+# PC1~year
+spotify_songs %>% 
+  ggplot(aes(x = year, 
+             y = pc1,
+             col = playlist_genre)) + 
+  geom_point(alpha = .1) + 
+  geom_smooth(se = F) +
+  labs(x = "year", y = "upbeatness",
+       title = "Relationship beweeten upbeatness, genre and release year",
+       color = "genre") +
+  scale_y_continuous(limits = c(-3, 6)) +
+  theme(plot.title = element_text(hjust = .5))
+```
+
+```{r}
+# PC2~year
+spotify_songs %>% 
+  ggplot(aes(x = year, 
+             y = pc2,
+             col = playlist_genre)) + 
+  geom_point(alpha = .1) + 
+  geom_smooth(se = F) +
+  labs(x = "year", y = "enthusiasm",
+       title = "Relationship beweeten enthusiasm, genre and release year",
+       color = "genre") +
+  scale_y_continuous(limits = c(-2, 3)) +
+  theme(plot.title = element_text(hjust = .5))
+```
+

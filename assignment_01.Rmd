@@ -1,0 +1,409 @@
+---
+title: "36-613 Homework 1, Fall 2022"
+author:
+- "Yi Pu(Andrew ID: yipu)"
+- 'Style Guide: The tidyverse style guide'
+date: "Due Wednesday, Sept 7th, 2022 (11:59 PM EDT) on Gradescope"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+***General instructions for all assignments***: 
+
++ Use this file as the template for your submission. Be sure to write your name at the top of this page in the author section. 
+
++ __Indicate which style guide you are using at the top in the author section__ (you will lose points for style guide violations). See syllabus for details.
+
++ For your homework submission, generate an .html file and an .Rmd file (named as: [AndrewID]-613-Homework1.Rmd -- e.g. "ryurko-613-Homework1.Rmd"). When you're done, submit it to Gradescope (the link to the course's Gradescope can be found on Canvas). Gradescope only accepts PDFs, so take a moment to convert your .html file to a PDF using some converter online. You can get RStudio to generate PDFs for you, but it requires some extra work---see the syllabus.
+
++ Your file should contain the code to answer each question in its own code block. Your code should produce plots/output that will be automatically embedded in the output (.html) file.
+
++ Each answer must be supported by written statements (unless otherwise specified). **Thus, even if you think your code output is self-explanatory, be sure to answer questions with written statements outside of code blocks.**
+
++ Although it's okay to discuss homework problems with other students, all of your homework (code, written answers, etc.) should be only your own. Instances of identical, nearly identical, or copied homework will be considered cheating and plagiarism. In other words, you must follow rules of academic integrity (as detailed in the syllabus).
+
+***
+***
+
+# Problem 1: Graph Critique / Replication (20 points)
+
+As part of your course grade for 36-613, you must submit two files on Gradescope describing and replicating (with pseudocode) two visualizations you found online from recent sources (see syllabus for details). In this question, you will get practice doing this, so that expectations for these submissions are clear. Note that the following is for homework credit; you CANNOT use the graphic you discuss here for your two graphics critique  post.
+
+a. (5 points) Find a graph from the Internet from the past 30 days (e.g., from a news article, blog post, online forum, etc.). For this part, all you have to do is include the graph. You have two choices here: 
+
++ Option 1: embed the graph/image directly in RMarkdown (see below for instructions), or 
++ Option 2: include a link to the graph in your answer to this question.
+
+```{r, echo = FALSE}
+# OPTION 1 INSTRUCTIONS: Replace image address in the code below with your graph/image address (just use copy image address and paste it in here).
+# Then set echo = FALSE so the code is NOT displayed in your submission.
+knitr::include_graphics("https://cdn.statcdn.com/Infographic/images/normal/7246.jpeg")
+```
+
+
+*OPTION 2 INSTRUCTIONS: [Here](https://cdn.statcdn.com/Infographic/images/normal/7246.jpeg) is a link to the graph that will be in the solutions. This is from a New York Times article but I accessed it from the [FlowingData](https://flowingdata.com/2022/08/11/serena-williams-career-rankings/) website managed by Nathan Yau.*
+
+
+b. (5 points) **Describe the graph** in 2-5 sentences. Be sure that your description touches on the following points:
+
++ What does the graph show? 
++ What variables are plotted, whether it's via symbols, color, or other features of the graph?
++ What is the main result of the graph?
+
+**The graph shows the places with the fastest internet speed. The internet speed of different places are plotted, which is via bars. The main result of the graph is that the places with the fastest speed are as following: Taiwan, Japan, France, U.S., Sigapore, Spain, Netherlands, Romania, Canada and Hong Kong.**
+
+
+c. (5 points) **Critique the graph** in 2-5 sentences. Be sure that your critique touches on the following points:
+
++ What are the main goal(s) of the graph? 
++ Does the graph do a good job of achieving its goals?
++ What are the strengths and weaknesses (if any) of the graphic? 
++ What would you change (if anything) about this graphic?
+
+**The main goal of the graph is to show the places with the fastest internet speed and their speed accordingly. The graph does a good job of achieving its goal. Its strength is that it uses bar chart to display the internet speed of different places, making it easy to compare. Its weakness is that it uses too many pictures and artistic designs which makes the whole plot kind of chaotic. I would use simple bars and country names instead of the artistic designs.**
+
+
+d. (5 points) **Write pseudocode** to recreate the graph with `ggplot`, pretending that you have access to the data (just make a fake name for the data object). Obviously it is quite early in the semester so you may not have extensive knowledge of all types of geometric objects available in the `ggplot2` library. You should spend some time looking at the default list of `geom` objects [here](https://ggplot2.tidyverse.org/reference/index.html), but you can also make up the name for a geometric object if you're not entirely sure what the one-to-one `ggplot` `geom` would be (e.g., `geom_diamond()`) - but still practice mapping what you think the variables of the dataset are to the visual. __Keep `eval = FALSE` in the code chunk below since you are not actually evaluating the code without the data__ (unless you actually want to recreate the graph, then go ahead find the data and run the code). You do NOT need to worry about matching the theme of the plot or including all annotations. This is just meant to practice the principles of the grammar of graphics.
+
+```{r, eval = FALSE}
+# Make a plot
+internet_speed_data %>%
+  ggplot(mapping = aes(x = places,
+                       y = speed)) +
+  geom_bar(fill = "skyblue") +
+  coord_flip() +
+  labs(
+    title = "The places with the fastest internet",
+    x = "Places",
+    y = "Speed(Mbps)"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+
+# Problem 2: Enroll in Piazza for 36-613 (5 points)
+
+All questions about assignments and course material should either be asked in office hours or on Piazza. Thus, **it is critical that you enroll in the course on Piazza**, because we'll often answer questions that you or your classmates may have.
+
+a. (1 points) If you're not already signed up, enrolled in our Piazza course [here](https://piazza.com/cmu/fall2022/36613a1).
+
+b. (0 points) On the course Piazza page, in the top-right corner, click the Settings gear/wheel icon. Under Account & Email Settings, click Edit Email Notifications. I recommend choosing Real Time for both parts and checking the "Automatically follow every question and note" checkbox. 
+
+c. (2 points) In the syllabus for 36-613, read the section "Discussion Board: Piazza" under "Course Materials, Procedures, and Logistics
+". Then, write the following sentence: "I certify that I have read, understood, and will follow the syllabus' rules about Piazza discussion." Then type your name. If you have any questions about rules on Piazza discussion, please email Professor Yurko.
+
+**I certify that I have read, understood, and will follow the syllabus' rules about Piazza discussion." Then type your name. If you have any questions about rules on Piazza discussion, please email Professor Yurko. Yi Pu**
+
+d. (2 points) Write the following sentence: "I certify that I will not abuse the use of anonymous posting on the course Piazza page. Furthermore, I will not ask any questions that essentially ask what the answer is to an assigned problem." Then type your name.
+
+**I certify that I will not abuse the use of anonymous posting on the course Piazza page. Furthermore, I will not ask any questions that essentially ask what the answer is to an assigned problem. Yi Pu**
+
+# Problem 3: Resisting the First Order for Categories (15 points)
+
+For this problem, we'll work with the `starwars` dataset that is included in the [`dplyr` package](https://dplyr.tidyverse.org/reference/starwars.html). The following code chunk loads the data, then uses the [`unnest`](https://tidyr.tidyverse.org/reference/nest.html) function to make a new dataset `starwars_character_films` where each row corresponds to a character appearance in a film. Type `help(starwars)` in the console to view more information about the `starwars` dataset.
+
+```{r, warning = FALSE, message = FALSE}
+library(tidyverse)
+data("starwars")
+starwars_character_films <- starwars %>%
+  dplyr::select(name, films) %>%
+  unnest(films)
+```
+
+We will focus on the `films` variable, which indicates the film a particular character appeared in. Specifically, we will demonstrate how to reorder categories on graphs in `R`. This is particularly useful when visualizing categorical variables, because the plotting order that `R` chooses by default may not be the best choice for your graphs.
+
+a. (3pts): First, make a bar plot of the `films` variable. It's okay if your plot isn't properly titled/labeled, but be sure to choose a non-default color. After making your plot, answer the following: What is the default plotting order for categorical ("character" or "factor") variables in `R`?  (You should be able to determine this from glancing at the order of the categories in your graph.) You will notice that you can't read the labels on the x-axis. A simple fix to this is to add `+ coord_flip()` to your plot to flip the axes. (Note the `coord_flip` order starts from the bottom.)
+
+```{r}
+# Make a plot
+starwars_character_films %>%
+  ggplot(mapping = aes(x = films)) +
+  geom_bar(fill = "skyblue") +
+  coord_flip() +
+  labs(
+    title = "The films count",
+    x = "Films",
+    y = "Count"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+**The default plotting order for categorical variables in R is alphabetical order.**
+
+b. (3pts): Read [this introduction](https://forcats.tidyverse.org/) to the `forcats` package, which was designed to work with categorical data in `R`. The cheatsheet on that page will be particularly useful.  Install and load the `forcats` package to your computer.  Answer the following:
+
++  What function in the `forcats` package can be used to reorder the levels of a factor in any order you want?
+
+**'fct_relevel()' in the 'forcats' package can be used to do so.**
+
++  What function in the `forcats` package can be used to reorder the categories from most frequent to least frequent?
+
+**'fct_infreq()' in the 'forcats' package can be used to do so.**
+
+
++  What combination of functions in the `forcats` package can be used to reorder the categories from least frequent to most frequent?
+
+**'fct_infreq()' plus 'fct_rev' in the 'forcats' package can be used to do so.**
+
+
+c. (3pts) Recreate the plot in Part A but this time, order the categories from most frequent to least frequent. This time, be sure that your graph is appropriately labeled.
+
+```{r}
+# Make a plot
+starwars_character_films %>%
+  mutate(films = fct_infreq(films)) %>%
+  ggplot(mapping = aes(x = films)) +
+  geom_bar(fill = "skyblue") +
+  coord_flip() +
+  labs(
+    title = "The films count",
+    x = "Films",
+    y = "Count"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+d. (3pts) Recreate the plot in Part A, but this time, order the categories in a logical order (such as episode order: The Phantom Menace, Attack of the Clones, ..., The Force Awakens; or release date order: A New Hope, The Empire Strikes Back, ..., The Force Awakens). Again, be sure that your graph is appropriately labeled. See the [Star Wars wikipedia page](https://en.wikipedia.org/wiki/Star_Wars#The_Skywalker_saga) for the episode and release orders. 
+
+```{r}
+starwars_character_films %>%
+  mutate(films = fct_relevel(
+    films, c(
+      "A New Hope",
+      "The Empire Strikes Back",
+      "Return of the Jedi",
+      "The Phantom Menace",
+      "Attack of the Clones",
+      "Revenge of the Sith",
+      "The Force Awakens"
+    )
+  )) %>%
+  ggplot(mapping = aes(x = films)) +
+  geom_bar(fill = "skyblue") +
+  coord_flip() +
+  labs(
+    title = "The films count",
+    x = "Films",
+    y = "Count"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+e. (3pts) Recreate the plot from the previous part (Part D), but this time, rename the categories so that they use the following film abbreviations:  I, II, III, IV, V, VI, VII. **Hint:** Check the help documentation for `fct_recode()`. See the Star Wars wikipedia page above for the episode order. Note that you no longer need to use `+ coord_flip()` to see the x-axis labels.
+
+```{r}
+starwars_character_films %>%
+  mutate(films = fct_relevel(
+    films, c(
+      "A New Hope",
+      "The Empire Strikes Back",
+      "Return of the Jedi",
+      "The Phantom Menace",
+      "Attack of the Clones",
+      "Revenge of the Sith",
+      "The Force Awakens"
+    )
+  )) %>%
+  mutate(films = fct_recode(
+    films,
+    "IV" = "A New Hope",
+    "V" = "The Empire Strikes Back",
+    "VI" = "Return of the Jedi",
+    "I" = "The Phantom Menace",
+    "II" = "Attack of the Clones",
+    "III" = "Revenge of the Sith",
+    "VII" = "The Force Awakens"
+  )) %>%
+  ggplot(mapping = aes(x = films)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = "The films count",
+    x = "Films",
+    y = "Count"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+# Problem 4: UFO Sightings in Pittsburgh (60 points)
+
+For this problem with a dataset via the #TidyTuesday project containing [information about UFO sightings](https://github.com/rfordatascience/tidytuesday/tree/master/data/2019/2019-06-25). The following code reads in the dataset using the [`read_csv()`](https://readr.tidyverse.org/reference/read_delim.html) function:
+
+```{r}
+library(tidyverse)
+ufo_sightings <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-06-25/ufo_sightings.csv")
+```
+
+a. (3pts) What are the number of rows and columns in this dataset? What are the names of the variables in this dataset? For this part, be sure to include any code you used to answer these questions. **You should always include all code you used to answer a question, unless stated otherwise. However, you should also be sure to answer questions outside of code blocks (unless stated otherwise), even if you think your code is self-explanatory.**
+
+```{r}
+# Show dimensions
+dim(ufo_sightings)
+# Show variable names
+names((ufo_sightings))
+```
+
+**The dataset contain 80332 rows and 11 columns. The names of the dataset are "date_time", "city_area", "state", "country", "ufo_shape", "encounter_length", "described_encounter_length" "description", "date_documented", "latitude" and "longitude".**
+
+
+b. (2pts) [Read this dataset description](https://github.com/rfordatascience/tidytuesday/tree/master/data/2019/2019-06-25) to better understand the UFO sightings dataset. In particular, look at the Data Dictionary section. For this question, please do the following:
+
++ Name at least three categorical variables.
+
+**"city_area", "state", "country", "ufo_shape"**
+
++ Name at least two quantitative variables.
+
+**"encounter_length", "latitude" and "longitude"**
+
+c. (10pts) Create a __single graph__ that displays the __marginal distribution__ of `country` (make sure your graph is labeled appropriately).
+
+```{r, message = FALSE, warning = FALSE}
+# Make a plot
+ufo_sightings %>%
+  mutate(country = fct_infreq(country)) %>%
+  ggplot(mapping = aes(x = country)) +
+  geom_bar(fill = "skyblue") +
+  # coord_flip() +
+  labs(
+    title = "The sighting country count",
+    x = "Country",
+    y = "Count"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+d. (3pts) Based on your graph, which country has the most UFO sightings? Which has the least?
+
+**US had the most UFO sightings and DE has the least.**
+
+e. (6pts) Create a summarized dataset that contains the following information about `ufo_shape` for UFO sightings in Pittsburgh (note: use lower-case `pittsburgh`):
+
+- `ufo_shape`: the UFO shape (this dataset should have one row for each shape)
+- `prop`: proportion of Pittsburgh UFO sightings with the particular UFO shape
+- `se`: standard error for UFO shape proportion estimate
+- `lower`: lower bound for 95% CI
+- `upper`: upper bound for 95% CI
+
+Make sure to only look at UFO sightings in Pittsburgh and remove any sightings where the `ufo_shape` is missing (i.e., `is.na(ufo_shape)`).
+
+```{r}
+# Select UFO sighting in pittsburgh with shape
+ufo_pittsburgh <- ufo_sightings %>%
+  dplyr::select(city_area, ufo_shape) %>%
+  filter(is.na(ufo_shape) == FALSE) %>%
+  filter(city_area == "pittsburgh")
+# Calculate shape information
+ufo_pitts_shape_info <- ufo_pittsburgh %>%
+  mutate(ufo_shape = fct_infreq(ufo_shape)) %>%
+  group_by(ufo_shape) %>%
+  summarize(count = n(), .groups = "drop") %>%
+  mutate(
+    total = sum(count),
+    prop = count / total,
+    se = sqrt(prop * (1 - prop) / total),
+    lower = prop - 2 * se,
+    upper = prop + 2 * se
+  )
+knitr::kable(ufo_pitts_shape_info[,-3])
+```
+
+f. (20pts) Create a __single graph__ that displays the __marginal distribution__ of `ufo_shape` for UFO sightings in Pittsburgh, using the dataset you constructed in part (e). Additionally, make sure your graph has the following:
+
+- add 95% CI to your display (following the example in lecture 2 - make sure the intervals are a different color than the geometric object displaying the proportions),
+- order the `ufo_shape` category levels by frequency in your display,
+- make sure the `ufo_shape` labels are easy to read and that your graph is labeled appropriately.
+
+```{r}
+ufo_pittsburgh %>%
+  mutate(ufo_shape = fct_infreq(ufo_shape)) %>%
+  group_by(ufo_shape) %>%
+  summarize(count = n(), .groups = "drop") %>%
+  mutate(
+    total = sum(count),
+    prop = count / total,
+    se = sqrt(prop * (1 - prop) / total),
+    lower = prop - 2 * se,
+    upper = prop + 2 * se
+  ) %>%
+  ggplot(aes(x = ufo_shape)) +
+  geom_bar(
+    fill = "skyblue",
+    aes(y = prop),
+    stat = "identity"
+  ) +
+  geom_errorbar(aes(
+    ymin = lower,
+    ymax = upper
+  ),
+  color = "red"
+  ) +
+  coord_flip() +
+  labs(
+    title = "The proportion of different shapes",
+    x = "Shapes",
+    y = "Prop"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+g. (2pts) Is there anything non-intuitive with any of the 95% CI you've displayed on your graph in part (f)? State Yes or No, and give a 1-2 sentence explanation.
+
+**Yes. Some of the lower boundaries are below zero while we know that the proportion is always naturally beyond zero. This is because the total case number is not big enough so that the standard is relatively large.**
+
+
+h. (2pts) Do you observe any pair of UFO shapes with intervals that do NOT overlap with each other? State Yes or No, and if Yes provide an example.
+
+**Yes. For instance, cone and fireball, cone and circle, cone and disk, cone and light, chevron and fireball, etc.**
+
+
+i. (10pts) In the previous part, we ignored the issue of multiple testing. You can find that there are 120 different pairwise comparisons ($120 = \binom{16}{2} =$ `ncol(combn(16,2))`) you could make from your graph in part (f). As a result, if we attempt to make multiple pairwise comparisons from a single graph with 95% CIs, our chance of making a Type 1 error is greater than 5%. 
+
+In general, $\alpha$-level CIs are constructed using the Normal quantile $z_{1 - \alpha / 2}$. When we construct 95% CIs, $\alpha = 0.05$, and thus we use $z_{1 - \alpha / 2} = z_{0.975}$ (computed with `qnorm(0.975)`). This is exactly what we used in lecture by constructing 95% CIs using $\pm$ 2 standard errors.
+
+Recreate your figure in part (f) but update your CIs with new CIs following the [Bonferroni correction](https://en.wikipedia.org/wiki/Bonferroni_correction). For the Bonferroni correction, $\alpha = 0.05$ is instead set to $0.05/k$, where $k$ is equal to the number of comparisons. Thus, for this part, all you need to do create new `upper` and `lower` values for your CIs based on this correction (i.e., use `qnorm` to replace your use of 2 in part (e)). 
+
+Additionally, use `pmin` and `pmax` to cap and floor your intervals respectively so they are within the [0,1] interval (see `help(pmin)` and `help(pmax)`).
+
+```{r}
+# Adjust CI
+ufo_pittsburgh %>%
+  mutate(ufo_shape = fct_infreq(ufo_shape)) %>%
+  group_by(ufo_shape) %>%
+  summarize(count = n(), .groups = "drop") %>%
+  mutate(
+    total = sum(count),
+    prop = count / total,
+    se = sqrt(prop * (1 - prop) / total),
+    lower = prop - qnorm(1 - 0.05 / 120 / 2) * se,
+    upper = prop + qnorm(1 - 0.05 / 120 / 2) * se
+  ) %>%
+  ggplot(aes(x = ufo_shape)) +
+  geom_bar(
+    fill = "skyblue",
+    aes(y = prop),
+    stat = "identity"
+  ) +
+  geom_errorbar(aes(
+    ymin = pmax(lower, 0),
+    ymax = pmin(upper, 1),
+    color = "red"
+  )) +
+  coord_flip() +
+  labs(
+    title = "The proportion of different shapes",
+    x = "Shapes",
+    y = "Prop"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+j. (2pts) Do you observe any pair of UFO shapes with intervals that do NOT overlap with each other in your updated figure in part (i)? State Yes or No, and if Yes provide an example.
+
+**No.**
+
+

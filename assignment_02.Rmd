@@ -1,0 +1,156 @@
+---
+title: "36-613 Homework 2, Fall 2022"
+author:
+- "Yi Pu"
+- 'Style Guide: The tidyverse style guide'
+date: "Due Wednesday, Sept 14th, 2022 (11:59 PM EDT) on Gradescope"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+# Problem 1: Testing the cut of diamonds (45 points)
+
+For this problem, we'll work with the `diamonds` dataset that is included in the [`ggplot2` package](https://ggplot2.tidyverse.org/) when you load the `tidyverse`. The following code chunk loads the data.
+
+```{r, warning = FALSE, message = FALSE}
+library(tidyverse)
+data("diamonds")
+```
+
+We will focus on the `cut` variable which should already be in order from Fair to Ideal (convenient for you!). See `help(diamonds)` for more info about the dataset.
+
+a. (10pts): First, conduct a __statistical test__ to assess if the proportion of diamonds belonging to the different levels of the `cut` variable are equal. Report your $p$-value and formal conclusion from this test.
+
+```{r}
+chisq.test(table(diamonds$cut))
+```
+
+**The p-value of the test is smaller than $2.2×10^{-16}$, so we have confidence rejecting null hypothesis. So we can conclude that the proportion of diamonds belonging to the different levels of the `cut` variable are not equal.**
+
+b. (10pts) Next, create a summarized dataset that contains the following information about each type of diamond `cut`:
+
+- `cut`: quality of the diamond cut (this dataset should have one row for each `cut`)
+- `prop`: proportion of diamonds with this particular `cut`
+- `se`: standard error for `cut` proportion estimate
+- `lower`: lower bound for 95% CI
+- `upper`: upper bound for 95% CI
+
+Make sure your `lower` and `upper` bounds for the 95% CI are adjusted for multiple testing comparisons following the same approach in HW1. (HINT: You are making `choose(5, 2)` pairwise comparisons.)
+
+```{r}
+cut_info <- diamonds %>%
+  #mutate(cut = fct_infreq(cut)) %>%
+  group_by(cut) %>%
+  summarize(count = n(), .groups = "drop") %>%
+  mutate(
+    total = sum(count),
+    prop = count / total,
+    se = sqrt(prop * (1 - prop) / total),
+    lower = prop - qnorm(1 - 0.05 / 10 / 2) * se,
+    upper = prop + qnorm(1 - 0.05 / 10 / 2) * se
+  )
+knitr::kable(cut_info)
+```
+
+c. (20pts) Create a __single graph__ that displays the __marginal distribution__ of `cut` using the dataset you constructed in part (b). Additionally, make sure your graph has the following:
+
+- add 95% CI to your display and make sure they do not fall outside of the [0,1] interval,
+- make sure the `cut` category levels are in order of the quality (Fair, Good, Very Good, Premium, Ideal) - note that this should be the default
+- make sure the `cut` labels are easy to read and that is your graph is labeled appropriately (i.e., include a plot title and titles for your axes).
+
+```{r, message = FALSE, warning = FALSE}
+cut_info %>% 
+ggplot(aes(x = cut)) +
+  geom_bar(
+    fill = "skyblue",
+    aes(y = prop),
+    stat = "identity"
+  ) +
+  geom_errorbar(aes(
+    ymin = pmax(lower, 0),
+    ymax = pmin(upper, 1),
+    color = "red"
+  )) +
+  coord_flip() +
+  labs(
+    title = "The proportion of different cut",
+    x = "Cut",
+    y = "Prop"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+d. (5pts): Based on your plot in part (c), do you observe any intervals that do not overlap with each other? Are your conclusions based on your plot in part (c) in agreement with your conclusion in part (a)?
+
+**Yes, all intervals do not overlap with each other, which suggest that the proportions of different of cut type are significantly different. This conclusion is in agreement with the conclusion in part (a).**
+
+# Problem 2: 2D visualization and inference of videogames (55 points)
+
+For this problem, we will work with a dataset from Kaggle containing [information about videogame sales](https://www.kaggle.com/datasets/gregorut/videogamesales?resource=download). The following code reads in the dataset using the [`read_csv()`](https://readr.tidyverse.org/reference/read_delim.html) function from the course GitHub repository:
+
+```{r}
+games_data <- 
+  read_csv("https://raw.githubusercontent.com/ryurko/DataViz-36613-Fall22/main/data/vgsales.csv")
+```
+
+a. (5pts) What are the number of rows and columns in this dataset? What are the names of the variables in this dataset? For this part, be sure to include any code you used to answer these questions. **You should always include all code you used to answer a question, unless stated otherwise. However, you should also be sure to answer questions outside of code blocks (unless stated otherwise), even if you think your code is self-explanatory.**
+
+```{r}
+dim(games_data)
+names(games_data)
+```
+
+**The dataset has 16598 rows and 11 columns. The names of the variables are "Rank", "Name", "Platform", "Year", "Genre" , "Publisher", "NA_Sales", "EU_Sales", "JP_Sales", "Other_Sales" and "Global_Sales".**
+
+b. (5pts) Create a smaller dataset that only contains rows for games where the `Platform` is either `PS3`, `X360`, or `Wii`. (HINT: use the `%in%` operator as explained in the top answer on [stackoverflow here](https://stackoverflow.com/questions/25647470/filter-multiple-values-on-a-string-column-in-dplyr).)
+
+```{r}
+games_certain_platform <- 
+  games_data[which(games_data$Platform %in% c("PS3", "X360", "Wii")),]
+knitr::kable(games_certain_platform[1:10,])
+```
+
+c. (20pts) Create a __single graph__ using the dataset you made in part (b) that has the following qualities:
+
++ can easily view the __marginal__ distribution of `Genre`,
+
++ can see the _conditional_ distribution of `Platform` given `Genre`,
+
++ make sure your plot labels are easy to read and that is your graph is labeled appropriately (i.e., include a plot title and titles for your axes).
+
+```{r}
+games_certain_platform %>% 
+  ggplot(aes(x = Genre, fill = Platform)) +
+  geom_bar() + 
+  theme_bw() +
+  coord_flip() +
+  labs(
+    title = "Genre and Platform Distribution of Games",
+    x = "Genres",
+    y = "Count"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+d. (10) Next, conduct a __statistical test__ to assess if `Genre` and `Platform` are independent. Report your $p$-value and formal conclusion from this test.
+
+```{r}
+chisq.test(games_certain_platform$Genre,
+           games_certain_platform$Platform)
+```
+
+**The p-value of the test is smaller than $2.2×10^{-16}$, so we have confidence rejecting null hypothesis. So we can conclude that `Genre` and `Platform` are not independent.**
+
+e. (15pts) Finally, create a mosaic plot with Pearson residuals to determine which, if any, combination of `Genre`-`Platform` display an unusually high (or low) count of games. Do you observe any combination displaying an unusually high (or low) count, answer __Yes__ or __No__ and if __Yes__ then given an example from your plot. Make sure your plot labels are easy to read (HINT: change the `las` and `cex.axis` arguments in `mosaicplot`).
+
+```{r}
+mosaicplot(table(games_certain_platform$Platform,
+                 games_certain_platform$Genre),
+           shade = TRUE,
+           main = "Genre and Platform Distribution of Games",
+           las = 2,
+           cex.axis = 0.6)
+```
+
+**Yes. Blue parts like the combination of 'Wii' and 'Misc' display an unusually high count. While red parts like the combination of 'Wii' and 'Action' display an unusually low count. **
