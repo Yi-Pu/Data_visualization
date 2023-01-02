@@ -1,0 +1,534 @@
+---
+title: "36-613 Homework 3, Fall 2022"
+author: 
+- "Yi Pu"
+- 'Style Guide: The tidyverse style guide'
+date: "Due Wednesday, Sept 21st, 2022 (11:59 PM EDT) on Gradescope"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#  Problem 1: Describing distributions with histograms and density plots (22 points)
+
+In this homework, we will work with the Guardian's list of [1000 Songs to Hear Before You Die.](https://www.theguardian.com/news/datablog/2009/mar/20/1) The data is available [here](https://raw.githubusercontent.com/ryurko/DataViz-36613-Fall22/main/data/1000songs.csv). Here's the code to load in the dataset, as well as fix an issue with the `YEAR` variable that contains `,` in some numbers...
+
+```{r, warning = FALSE, message = FALSE}
+library(tidyverse)
+# Read in the data
+songs <- 
+  read_csv("https://raw.githubusercontent.com/ryurko/DataViz-36613-Fall22/main/data/1000songs.csv") %>%
+  # Clean the year variable:
+  mutate(YEAR = as.numeric(str_remove_all(YEAR, ",")))
+
+```
+
+a. (6pts) Using `geom_histogram()`, create a histogram of `YEAR`, where you specify a value for `binwidth` that you think is appropriate (in lecture we changed the number of bins, but for this problem you'll specify the `binwidth` instead). Defend your choice in 1-2 sentences. Make sure your histogram has appropriate titles/labels and a non-default color. Then, describe the marginal distribution of `YEAR` in 1-3 sentences.
+
+```{r}
+songs %>% 
+  ggplot(aes(x = YEAR)) + 
+  geom_histogram(binwidth = 4,
+                 fill = "skyblue") +
+  labs(x = "YEAR",
+       y = "Count",
+       title = "Distribution of the varibale YEAR") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
++ **I would choose 4 as the binwidth of this histogram because when binwidth = 3 or smaller, the distribution contains too much noises and its shape isn't smooth at all. And when binwidth = 5 or larger, the distribution is too general which ignores some important information.**
+
++ **The marginal distribution of YEAR is a bimodal distribution with a higher peak and a lower peak. It is also left skewed.**
+
+b. (6pts) In this part, make the exact same graph you made in Part A, but with these changes:
+
++ Add a smoothed density to the histogram using `geom_density()`. Be sure to add `aes(y = after_stat(density))` within `geom_histogram()`.
+
++ Add a vertical line at the mean of `YEAR` using `geom_vline(aes(xintercept = mean(YEAR))`. 
+
++ Make sure that the histogram bars `fill`, smoothed density line, and vertical line all have different colors.
+
++ Make sure the title and labels are appropriate.
+
+After you've made your plot, answer the following question. If you tried to just use `geom_density()` *without* adding `aes(y = after_stat(density))` within `geom_histogram()`, you wouldn't be able to see the density curve overlayed on top of the histogram. Why is that? Explain in 1-2 sentences. (**Hint**: Try getting rid of `aes(y = after_stat(density))` and see what happens.)
+
+```{r}
+songs %>% 
+  ggplot(aes(x = YEAR)) + 
+  geom_histogram(binwidth = 4,
+                 fill = "skyblue",
+                 aes(y = after_stat(density))) +
+  labs(x = "YEAR",
+       y = "Density",
+       title = "Distribution of the varibale YEAR") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_density(col = "red") +
+  geom_vline(aes(xintercept = mean(YEAR)))
+```
+
+**Because the y-variable would be count of year instead of density if we do not use the command `aes(y = after_stat(density))`. So the density curve would be lose to zero that it couldn't be shown properly in the plot.**
+
+c. (6pts) Now copy-and-paste your Part B code here. Then, add one of the following to your `ggplot` code:
+
++ `facet_wrap(~ THEME)`
++ `facet_grid(~ THEME)`
++ `facet_grid(THEME ~ .)`
+
+Choose the specification of `facet_wrap()` or `facet_grid()` that you believe gives you the best ability to compare these conditional distributions; mention why you made your choice in one sentence. **You don't need vertical lines in this plot, so delete the piece of your code adding vertical lines, but be sure that density curves are still added to your plot.** Then, compare and contrast the different conditional distributions of `YEAR` given `THEME` in 1-4 sentences.
+
+
+```{r}
+songs %>% 
+  ggplot(aes(x = YEAR)) + 
+  geom_histogram(binwidth = 4,
+                 fill = "skyblue",
+                 aes(y = after_stat(density))) +
+  labs(x = "YEAR",
+       y = "Density",
+       title = "Distribution of the varibale YEAR") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_density(col = "red") +
+  facet_grid(THEME ~ .)
+```
+
+**I would choose 'facet_grid(THEME ~ .)' because it aligns the x-axis of all plots, thus showing most clearly the differences in peaks, means, and variances of all distributions. YEAR in all distributions above are concentrated after 1950 and their peaks occur at different places, from 1950 to 1990. The first plot, the second plot, the forth plot and the fifth plots have an obvious sub-peak. And all the distribution are left skewed, but to different degrees. The fifth plot looks kind of symmetric.**
+
+
+d. (4pts) Let's say that Korg is taking 36-613, and he excitedly makes the following plot after listening to a 36-613 lecture:
+
+```{r, warning = FALSE, message = FALSE}
+songs %>%
+  ggplot(aes(x = YEAR, color = THEME)) +
+  geom_density()
+```
+
+Korg makes the following argument for why he thinks this is a good plot:
+
+"If you think about it, having histograms *and* smoothed densities is just a waste of data-ink: we really just need the smoothed density to get an idea of what the distribution is. Also, I've heard that overlaying smoothed densities is a great way to compare distributions, so why not just do that? I'd say my plot is better than the Part C plot for comparing different `YEAR` distributions, because it puts everything in one plot, rather than seven different plots."
+
+Do you agree or disagree with Korg's argument? After saying whether you agree or disagree, explain in 1-3 sentences.
+
+**I disagree. There are too many curves in this single plots which makes it chaotic and it would be difficult to distinguish the different curves. And the smooth curve does not contain all the information of the real distributions since it might ignore some special points.**
+
+
+# Problem 2: Automatic histograms (22 points)
+
+As you may have seen in Problem 1A, it can be tedious to figure out what the best number of `bins` or `binwidth` is for a histogram. 
+
+Fortunately, there are many different ["rules"](https://en.wikipedia.org/wiki/Histogram#Sturges'_formula) for either choosing the number of bins $k$ or the binwidth $h$. We will consider the following rules:
+
++ Sturges' formula (which gives you the number of bins)
++ The Rice rule (which gives you the number of bins)
++ Scott's rule (which gives you the binwidth)
++ Freedman-Diaconis' rule (which gives you the binwidth)
+
+All of these rules are described on the [Wikipedia page](https://en.wikipedia.org/wiki/Histogram#Sturges'_formula) linked above. In fact, the `hist()` function (how you can make a histogram in `R` without `ggplot()`) already has the first, third, and fourth rules available. Unfortunately, these rules are *not* readily available in `ggplot`; however, they can be readily coded up, which is what you'll have to do in this problem.
+
+a. (12pts) In this part, write four functions:
+
++ `get_sturges_bin_num(x)`: Returns the number of bins according to Sturges' rule.
+
++ `get_rice_bin_num(x)`: Returns the number of bins according to the Rice rule.
+
++ `get_scotts_binwidth(x)`: Returns the binwidth according to Scott's rule.
+
++ `get_fd_binwidth(x)`: Returns the binwidth according to Freedman-Diaconis' rule.
+
+Each of these functions should take in a quantitative vector `x` (e.g., `songs$YEAR`). To get you started, there is some template code below that you can edit. **After you've written your functions, report what each function returns when you input `songs$YEAR`.** Here are a few other hints to help you with this problem:
+
++ Sturges' rule and the Rice rule involve the [ceiling function](https://en.wikipedia.org/wiki/Floor_and_ceiling_functions); the ceiling function in `R` is `ceiling(x)`.
++ The Rice rule and Scott's rule involves the cubic root; note that $\sqrt[3]{n} = n^{1/3}$, which you can type in `R`.
++ Sturges' rule also uses the $\log_2(x)$ function; this is `log2(x)` in `R`.
++ Freedman-Diaconis' rule involves the IQR, which you can compute using the `IQR()` function.
+
+To be clear, this problem requires minimal coding; each function only requires 3-4 lines of code (some of which I already give you in the template code below). This problem is just meant to demonstrate that sometimes we can write mini functions to help us make graphs (as we will see in Part B). **Remember to report what the each function returns when you input the `songs$YEAR` variable!**
+
+```{r}
+get_sturges_bin_num <- function(x) {
+	# number of observations
+	n <- length(x)
+	# thus, the number of bins is
+	k <- log2(n) + 1
+	return(ceiling(k))
+}
+
+get_rice_bin_num <- function(x) {
+	# number of observations
+	n <- length(x)
+	# thus, the number of bins is
+	k <- 2 * n^(1/3)
+	return(ceiling(k))
+}
+get_scotts_binwidth <- function(x) {
+	# the standard deviation is
+	sigma_hat <- sqrt(var(x))
+	# number of observations
+	n <- length(x)
+	# thus, the binwidth is
+	h <- 3.49 * sigma_hat / n^(1/3)
+	return(h)
+}
+get_fd_binwidth <- function(x) {
+  # the IQR is
+	iqr <- 	quantile(x, 3/4) - quantile(x, 1/4)
+	# number of observations
+	n <- length(x)
+	# thus, the binwidth is
+	h <- 2 * iqr / n^(1/3)
+	return(h)
+}
+# REPORT WHAT YOU GET FOR EACH OF THESE FUNCTIONS HERE (after uncommenting)
+get_sturges_bin_num(songs$YEAR)
+get_rice_bin_num(songs$YEAR)
+get_scotts_binwidth(songs$YEAR)
+get_fd_binwidth(songs$YEAR)
+```
+
+**The first function returns 11, which is the number of bins calculated by Sturges’ formula. The second function returns 20, which is the number of bins calculated by The Rice rule. The third function returns 5.46, which is the binwidth calculated by Scott’s rule. The forth function returns 4.01, which is the binwidth calculated by Freedman-Diaconis’ rule.**
+
+
+b. (10pts) Now make a histogram of `songs$YEAR` using each of the four rules from Part A. Specifically, make these four histograms:
+
++ A histogram of `songs$YEAR`, specifying `bins` using Sturges' rule.
++ A histogram of `songs$YEAR`, specifying `bins` using the Rice rule.
++ A histogram of `songs$YEAR`, specifying `binwidth` using Scott's rule.
++ A histogram of `songs$YEAR`, specifying `binwidth` using Freedman-Diaconis' rule.
+
+Make these histograms using `ggplot`, and please place four histograms in a grid by following template code below with the [`patchwork` package](https://patchwork.data-imaginist.com/) (make sure to install it in the Console first using `install.packages("patchwork")`). **Be sure to add appropriate titles for each plot so that it is clear which histogram corresponds to which rule.**
+
+After you've made your histograms, discuss the differences among the four histograms in 1-3 sentences.
+
+**Remember that you need to specify `bins` for Sturges' rule and the Rice rule but `binwidth` for the other two rules!**
+
+```{r, message = FALSE}
+# PUT YOUR CODE FOR THE STURGES PLOT HERE
+sturges_plot <- 
+  songs %>% 
+  ggplot(aes(x = YEAR)) + 
+  geom_histogram(bins = get_sturges_bin_num(songs$YEAR),
+                 fill = "skyblue",
+                 aes(y = after_stat(density))) +
+  labs(x = "YEAR",
+       y = "Density",
+       title = "Histogram Using Sturges’ formula") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_density(col = "red")
+
+rice_plot <- 
+  songs %>% 
+  ggplot(aes(x = YEAR)) + 
+  geom_histogram(bins = get_rice_bin_num(songs$YEAR),
+                 fill = "skyblue",
+                 aes(y = after_stat(density))) +
+  labs(x = "YEAR",
+       y = "Density",
+       title = "Histogram Using The Rice Rule") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_density(col = "red") 
+
+# PUT YOUR CODE FOR THE SCOTT PLOT HERE
+scotts_plot <- 
+  songs %>% 
+  ggplot(aes(x = YEAR)) + 
+  geom_histogram(binwidth = get_scotts_binwidth(songs$YEAR),
+                 fill = "skyblue",
+                 aes(y = after_stat(density))) +
+  labs(x = "YEAR",
+       y = "Density",
+       title = "Histogram Using Scott’s Rule") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_density(col = "red")
+
+# PUT YOUR CODE FOR THE FREEDMAN-DIACONIS PLOT HERE
+fd_plot <- 
+  songs %>% 
+  ggplot(aes(x = YEAR)) + 
+  geom_histogram(binwidth = get_fd_binwidth(songs$YEAR),
+                 fill = "skyblue",
+                 aes(y = after_stat(density))) +
+  labs(x = "YEAR",
+       y = "Density",
+       title = "Histogram Using Freedman-Diaconis’ Rule") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_density(col = "red")
+
+# Display all arranged
+library(patchwork)
+sturges_plot + rice_plot + scotts_plot + fd_plot
+```
+
+**The four histograms have different number of bins and binwidths. The histogram using Sturges's formula has the largest binwidth and thus the least bin number. And the histogram usign F-D's formula has the smallest binwidth and thus the most bin numbers. The other two are in the between.**
+
+
+# Problem 3: Violin plots: Transparency Side-by-Side (16 points)
+
+In this problem we will continue to use the `songs` dataset, this time using violin plots to visualize the dataset.
+
+a. (5pts) First, make a violin plot of the `YEAR` variable using `geom_violin()`; you can place `YEAR` on the x-axis or y-axis (your choice). However, be sure that the other axis does not display any numbers, which can be otherwise distracting. Within `geom_violin()`, specify a `fill` color of your choice. Make sure that your plot is appropriately labeled and titled. All you need to do here is make the plot (and include your code to make the plot, of course). I won't make you interpret the marginal distribution of `YEAR` based on this plot; we already did that earlier with histograms. (**Hint**: To make numbers not display on one of the axes, try setting that axis variable, `x` or `y`, equal to `""`.)
+
+```{r}
+songs %>% 
+  ggplot(aes(x = "", y = YEAR)) + 
+  geom_violin(fill = "skyblue") + 
+  labs(x = "",
+       y = "YEAR",
+       title = "Distribution of YEAR Shown by Violin Plot") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  coord_flip()
+```
+
+
+b. (5pts) Now copy-and-paste your code from Part A here and do the the following:
+
++ add `alpha = .5` within `geom_violin()`,
+
++ add a boxplot layer on top of your violin plot with `+ geom_boxplot(width = .2, alpha = .5)`.
+
+Compared to Part A, you should see that the violin-area itself is somewhat transparent. Plus you can now see a boxplot on top. It appears some of the outlier dots are more transparent than others. Why does this happen? And what does impact does `width` have on the boxplot? Explain in 1-4 sentences.
+
+```{r}
+songs %>% 
+  ggplot(aes(x = "", y = YEAR)) + 
+  geom_violin(fill = "skyblue",
+              alpha = .5) + 
+  geom_boxplot(width = .2, alpha = .5) +
+  labs(x = "",
+       y = "YEAR",
+       title = "Distribution of YEAR Shown by Violin Plot") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  coord_flip()
+```
+
+**Some outlier points are not as transparent as others because there are several points overlapping each other,so the transparency will decrease. And the 'width' will change the width of the boxplot without changing its length. Adjusting the width of the boxplot can make it better suit the violin plot.**
+
+c. (6pts) For this part, copy-and-paste your code from Part B, and then change your code accordingly such that you display side-by-side violins with overlaid boxplots showing the conditional distribution of `YEAR` given `THEME`. Furthermore, `fill` each violin/box according to `THEME`, such that each violin/box is colored by theme. Instead of specifying the `fill` within the `geom_violin()` layer, you can specify it within the initial `ggplot()` function so that the `fill` aesthetic is __shared__ across both `geom_violin()` and `geom_boxplot()` layers, e.g., `ggplot(songs, aes(x = YEAR, y = THEME, fill = THEME)) + ...`
+
+Again make sure that your plot is appropriately titled/labeled. Your final plot should have `YEAR` on one axis, `THEME` on another axis, and the violins/boxes filled by `THEME` (with some transparency).
+
+```{r}
+songs %>% 
+  ggplot(aes(x = THEME, 
+             y = YEAR,
+             fill = THEME)) + 
+  geom_violin(alpha = .5) + 
+  geom_boxplot(width = .2, alpha = .5) +
+  labs(x = "THEME",
+       y = "YEAR",
+       title = "Conditional Distribution of YEAR Given THEME") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  coord_flip()
+```
+
+
+#  Problem 4: Whining about density estimates and histograms (40 points)
+
+In this problem, we will work with a dataset of red wines. The dataset is provided [here](https://www.kaggle.com/piyushgoyal443/red-wine-dataset/data) by Kaggle. Documentation for all of the variables is available at that link as well. The help documentation is also available on the course GitHub [here](https://raw.githubusercontent.com/ryurko/DataViz-36613-Fall22/main/data/wineQualityInfo.txt) for reference.
+
+Here is the code to read in the data into `R`:
+
+```{r, warning = FALSE, message = FALSE}
+wine <- read_csv("https://raw.githubusercontent.com/ryurko/DataViz-36613-Fall22/main/data/wineQualityReds.csv")
+```
+
+The following problems focus on examining the distribution of `volatile.acidity` with density estimates and histograms.
+
+a. (8pts) First we will plot the marginal distribution of `volatile.acidity`, and visually assess if it follows a Normal distribution. To do this, complete the following steps:
+
++ Create a histogram of `volatile.acidity` on the **density scale**. Make the color something other than gray or black, and (as usual) be sure your plot is properly titled and labeled.
+
+```{r}
+wine %>% 
+  ggplot(aes(x = volatile.acidity)) + 
+  geom_histogram(
+    aes(y = after_stat(density)),
+        fill = "skyblue") +
+  labs(x = "volatile.acidity",
+       y = "Density",
+       title = "Distribution of the varibale volatile.acidity") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
++ To see how well a Normal distribution fits to `volatile.acidity`, write code that defines the sample mean and variance `volatile.acidity`; define these as `mean_est` and `var_est`, respectively. Then, using the code below (that you have to modify), define the variable `acidity_norm_pdf`, which is the estimated Normal density for `volatile.acidity`:
+
+```{r}
+# first, define the mean and variance:
+mean_est <- mean(wine$volatile.acidity)
+var_est <- var(wine$volatile.acidity)
+  
+# then, compute the Normal density
+wine$acidity_norm_pdf <- dnorm(wine$volatile.acidity,
+                               mean = mean_est, 
+                               sd = sqrt(var_est))
+```
+
+Currently, the above code fits a standard Normal density (with mean 0, standard deviation 1), and you need to replace the mean and sd arguments appropriately. **Remember that sd is for standard deviation, which is the square root of the variance.**
+
++ Finally, add the Normal density curve to your histogram of `volatile.acidity`. To do this, first copy-and-paste your histogram code, and then add the line `+ geom_line(aes(volatile.acidity, acidity_norm_pdf))`.
+
+```{r}
+wine %>% 
+  ggplot(aes(x = volatile.acidity)) + 
+  geom_histogram(
+    aes(y = after_stat(density)),
+        fill = "skyblue") +
+  labs(x = "volatile.acidity",
+       y = "Density",
+       title = "Distribution of the varibale volatile.acidity") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_line(aes(volatile.acidity, acidity_norm_pdf),
+            col = "red")
+```
+
+
+Ultimately, you should end up with a histogram of `volatile.acidity` with a Normal density curve added to the plot. After you've made your plot, describe the distribution of `volatile.acidity` in 1-2 sentences, and then discuss whether or not you think this distribution appears to be Normally distributed (say Yes or No, and then provide a 1-2 sentence explanation).
+
+**The distribution of `volatile.acidity` is slightly right-skewed. Most the values are in the interval between 0-1.2. No, it is not normally distributed since it is right-skewed and thus not symmetric. And this distribution cuts off at 0 since it does not have any negative values.**
+
+b. (5pts) Now we'll formally test whether `volatile.acidity` follows a Normal distribution. Do this using the Kolmogorov-Smirnov (KS) test. Specifically: Test whether `volatile.acidity` follows a Normal distribution whose mean and standard deviation are equal to the sample mean and sample standard deviation of `volatile.acidity` observed in the data, respectively. In your answer, after providing the appropriate code for the KS test, state your formal conclusion from the test. (For this problem, just ignore the warning message that is displayed.)
+
+```{r}
+reference <- rnorm(length(wine$volatile.acidity),
+                   mean = mean_est,
+                   sd = sqrt(var_est))
+set.seed(121)
+ks.test(jitter(wine$volatile.acidity, 0.000000001), reference)
+```
+
+**The p-value of this test is 0.01, which is smaller than 0.05. So we have confidence to reject the null hypothesis and thus reach the conclusion that the two distributions are different. So the variabale 'volatile.acidity' is not normally distributed.**
+
+c. (6 points)  Create two density plots of `volatile.acidity`. (You can use the `density` function in base `R`, or you can use the `geom_density` function in `ggplot`.)  In the first plot, use a small bandwidth, so that many local features of the distribution are shown, and the density estimate is somewhat "jagged" / "rigid" / not smooth.  In the second, use a larger bandwidth, so that the local features of the distribution are smoothed out. Include both plots in your answer, and compare and contrast the two plots (e.g., discuss which features are easier or more difficult to see in each of the plots) in 1-3 sentences. You may have to try a few bandwidth values to figure out what is a relatively small or large bandwidth. For this problem, instead of modifying the `adjust` parameter like we did in lecture, you should directly change the `bw` input for `geom_density()` instead.
+
+Make sure that each plot is appropriately titled/labeled such that we know which is the "large bandwidth" plot and which is the "small bandwidth" plot. Furthermore, be sure to include the *units* of the `volatile.acidity` variable in your labels; you'll have to check the data documentation to see what the units are for this variable.
+
+```{r}
+# Density of volatile.acidity with smaller bandwidth
+wine %>% 
+  ggplot(aes(x = volatile.acidity)) +
+  geom_density(bw = .01,
+               fill = "skyblue") +
+  labs(x = "Volatile Acidity(g/dm^3)",
+       y = "Density",
+       title = "Density of volatile.acidity with smaller bandwidth") +
+  theme(plot.title = element_text(hjust = 0.5))
+# Density of volatile.acidity with larger bandwidth
+wine %>% 
+  ggplot(aes(x = volatile.acidity)) +
+  geom_density(bw = .2,
+               fill = "skyblue") +
+  labs(x = "Volatile Acidity(g/dm^3)",
+       y = "Density",
+       title = "Density of volatile.acidity with larger bandwidth") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+**The plots with smaller bandwidth have many noises. We can see it's right-skewed and have got several peaks between 0.2 and 0.8. The plots with larger bandwidth is very smooth and has got only one peak. But it is also right skewed.**
+
+d. (15 points) For the remainder of this question, we will also work with the variable `quality`. Look at the help documentation for this variable. From this description, is this variable a quantitative/continuous variable, quantitative/discrete variable, categorical/nominal variable, or categorical/ordinal variable? After answering this, use the `class` function to determine what type of variable this is in `R`. In your answer, report what the class is.
+
+```{r}
+table(wine$quality)
+class(wine$quality)
+```
+
+**This variable is a quantitative/discrete variable. It is 'numeric'.**
+
+Regardless of your answer, please run the following code to treat `quality` as a factor:
+```{r}
+wine <- wine %>% mutate(quality = factor(quality))
+```
+
+Then, to assess if the distribution of `volatile.acidity` differs depending on the `quality` of the wine, make four different plots:
+
++ A "stacked histogram" of `volatile.acidity` (where the bars are colored according to the wine `quality`). To do this, first make a histogram of `volatile.acidity`, and then specify `fill` as `quality`.
+
+```{r}
+wine %>% 
+  ggplot(aes(x = volatile.acidity)) + 
+  geom_histogram(aes(fill = quality)) +
+  labs(x = "Volatile Acidity(g/dm^3)",
+       y = "Count",
+       title = "Distribution of volatile.acidity with different quality") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
++ A "conditional density plot," where there are six density curves of `volatile.acidity` -- one for each wine quality grade -- on a single plot, with each curve colored according to the wine quality). Let `R` choose the bandwidth automatically.
+
+```{r}
+wine %>% 
+  ggplot(aes(x = volatile.acidity)) + 
+  geom_density(aes(color = quality)) +
+  labs(x = "Volatile Acidity(g/dm^3)",
+       y = "Density",
+       title = "Conditional distribution of volatile.acidity given quality") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
++ Facetted histograms of `volatile.acidity`, facetted by `quality`.
+
+```{r}
+wine %>% 
+  ggplot(aes(x = volatile.acidity)) + 
+  geom_histogram(fill = "skyblue") +
+  labs(x = "Volatile Acidity(g/dm^3)",
+       y = "Quality",
+       title = "Conditional distribution of volatile.acidity given quality") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  facet_grid(quality ~ .)
+```
+
+
++ Next create a ridgeline plot. To make ridgeline plots, you’ll need to install the [ggridges](https://cran.r-project.org/web/packages/ggridges/vignettes/introduction.html) R package; do that now by running `install.packages("ggridges")` in your Console. I’ve found that you need to restart RStudio after installing the package. Once you do that, you should be able to uncomment the following code, but remember to add appropriate title/labels:
+
+```{r}
+library(ggridges)
+wine %>% 
+  ggplot(aes(x = volatile.acidity,
+             y = quality)) + 
+  geom_density_ridges(rel_min_height = 0.01,
+                      aes(fill = quality)) +
+  labs(x = "Volatile Acidity(g/dm^3)",
+       y = "Quality",
+       title = "Conditional distribution of volatile.acidity given quality") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
++ Notice the message that appeared regarding a `joint bandwidth`. By default, `geom_density_ridges()` estimates a single bandwidth to use for each density in the plot. Alternatively, you can force `geom_density_ridges()` to estimate a different bandwidth for each density by doing the following:
+
+  + Copy-and-paste your above `ggridges` code
+  
+  + Add `height = stat(density)` within `aes()`.
+  
+  + Add `stat = "density"` within `geom_density_ridges()`.
+  
+  + Make another ridgeline plot by following the above three steps. Then, compare and contrast the plot you made here with the previous ridgeline plot. In particular: Which smoothed densities look similar, and which smoothed densities look different?
+  
+```{r}
+library(ggridges)
+wine %>% 
+  ggplot(aes(x = volatile.acidity,
+             y = quality)) + 
+  geom_density_ridges(stat = "density",
+                      rel_min_height = 0.01,
+                      aes(fill = quality,
+                          height = stat(density))) +
+  labs(x = "Volatile Acidity(g/dm^3)",
+       y = "Quality",
+       title = "Conditional distribution of volatile.acidity given quality") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+**The two at top look similar while the three at bottom look different.**
+
+All you have to do for this part is create the five plots above (as well as answer the preliminary questions about `quality` and the difference between your two ridgeline plots). We'll interpret the plots in the next part.
+
+e. (6pts) After looking at your graphs in Part D, Korg asks you: "Do you think the distribution of `volatile.acidity` depends on the quality of the wine?" Use one or more of your graphs in Part D to answer this question in 1-4 sentences. Be sure that your answer discusses whether the center, spread, and shape of `volatile.acidity` depend (or not depend) on `quality`, and mention which graph(s) you used to arrive at each of your observations.
+
+
+**Yes, I think so. According to the density curve plots, the shapes of the 6 distributions are different, depending on different quality. And according to the ridgeline plots, the center and the spread of the 6 distributions are different, depending on different quality.**
+
